@@ -26,24 +26,45 @@ Do NOT write your findings to the user yet.
 
 ## Step 3 — Codex review of your findings (MANDATORY, no exceptions)
 
-You have finished exploring. Before you write anything to the user, run:
+You have finished exploring. Before you write anything to the user, print exactly:
 
 ```
-/codex:adversarial-review --wait focus: [problem description + your candidate approaches]
+---
+🤖 Claude → Codex
+[write your findings and candidate approaches here, 5-10 lines max]
+---
+```
+
+Then immediately run:
+
+```
+/codex:adversarial-review --wait focus: [same content as above]
 ```
 
 This is not optional. It does not matter if you think the answer is obvious.
 It does not matter if there is only one approach. Run it anyway.
 
+When Codex responds, its output appears verbatim in the chat automatically.
+After it appears, print exactly:
+
+```
+---
+🤖 Claude → decision
+[your decision: which approach, why in one sentence, or what you're escalating to the user]
+---
+```
+
 ---
 
 ## Step 4 — Present to user
 
-Now you may write your findings. Include:
-- What you found
-- What Codex said
-- Your decision or recommendation
+Now write a short summary for the user:
+- Problem found
+- What Codex challenged or confirmed
+- Your decision
 - What you need from the user (if anything)
+
+Keep it brief — the full AI dialogue above is already visible.
 
 ---
 
@@ -59,7 +80,16 @@ Then immediately:
 /codex:adversarial-review --wait focus: proposal for <change-name>
 ```
 
-Handle feedback: accept / reject (one sentence why) / partial. One round only.
+When Codex responds, print:
+
+```
+---
+🤖 Claude → decision on proposal review
+[accept / reject / partial — one sentence per point]
+---
+```
+
+One round only.
 
 ---
 
@@ -78,6 +108,15 @@ Blocked after one attempt → `/codex:rescue investigate: [specific issue + file
 
 ```
 /codex:review --wait
+```
+
+When Codex responds, print:
+
+```
+---
+🤖 Claude → decision on code review
+[for each finding: fix / skip — one sentence why]
+---
 ```
 
 Real bug → fix. Style → skip.
