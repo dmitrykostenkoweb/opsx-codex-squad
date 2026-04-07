@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-// install.js — copies the opsx-codex skill into the Claude Code skills directory.
+// install.js — installs the opsx-codex skill and /squad command into Claude Code.
 // Zero dependencies. Requires Node 18+.
 
-import { cpSync, existsSync, mkdirSync } from "node:fs";
+import { cpSync, copyFileSync, existsSync, mkdirSync, lstatSync, realpathSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
-import { createRequire } from "node:module";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
@@ -14,58 +13,76 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const SKILL_NAME = "opsx-codex";
 
-// Source: the opsx-codex/ directory bundled with this package.
-const skillSrc = resolve(__dirname, "..", "opsx-codex");
+const skillSrc    = resolve(__dirname, "..", "opsx-codex");
+const commandSrc  = resolve(__dirname, "..", "commands", "squad.md");
 
-// Target: configurable via env var, falls back to ~/.claude/skills/
-const skillsRoot =
-  process.env.CLAUDE_SKILLS_DIR ?? join(homedir(), ".claude", "skills");
-const skillDest = join(skillsRoot, SKILL_NAME);
+const claudeDir   = join(homedir(), ".claude");
+const skillsRoot  = process.env.CLAUDE_SKILLS_DIR ?? join(claudeDir, "skills");
+const commandsDir = process.env.CLAUDE_COMMANDS_DIR ?? join(claudeDir, "commands");
+
+const skillDest   = join(skillsRoot, SKILL_NAME);
+const commandDest = join(commandsDir, "squad.md");
 
 // ─── Pre-flight checks ────────────────────────────────────────────────────────
 
-if (!existsSync(skillSrc)) {
-  fatal(`Source skill directory not found: ${skillSrc}`);
-}
+if (!existsSync(skillSrc))   fatal(`Source skill directory not found: ${skillSrc}`);
+if (!existsSync(commandSrc)) fatal(`Source command file not found: ${commandSrc}`);
 
-// The skills root doesn't have to exist — we'll create it if CLAUDE_SKILLS_DIR
-// was explicitly set. But if using the default path and ~/.claude doesn't exist,
-// that likely means Claude Code isn't installed.
-const claudeDir = join(homedir(), ".claude");
 if (!process.env.CLAUDE_SKILLS_DIR && !existsSync(claudeDir)) {
   fatal(
     `~/.claude directory not found.\n` +
-      `  Claude Code does not appear to be installed on this machine.\n` +
-      `  Install Claude Code first: https://claude.ai/code\n` +
-      `  Or set CLAUDE_SKILLS_DIR to a custom path and retry.`
+    `  Claude Code does not appear to be installed on this machine.\n` +
+    `  Install Claude Code first: https://claude.ai/code\n` +
+    `  Or set CLAUDE_SKILLS_DIR / CLAUDE_COMMANDS_DIR to custom paths and retry.`
   );
 }
 
-// ─── Install ──────────────────────────────────────────────────────────────────
+// ─── Install skill ────────────────────────────────────────────────────────────
 
-const isUpdate = existsSync(skillDest);
-const verb = isUpdate ? "Updating" : "Installing";
-
-console.log(`\n${verb} skill: ${SKILL_NAME}`);
+const skillVerb = existsSync(skillDest) ? "Updating" : "Installing";
+console.log(`\n${skillVerb} skill: ${SKILL_NAME}`);
 console.log(`  from : ${skillSrc}`);
-console.log(`  to   : ${skillDest}\n`);
+console.log(`  to   : ${skillDest}`);
 
-try {
-  mkdirSync(skillsRoot, { recursive: true });
-  cpSync(skillSrc, skillDest, { recursive: true, force: true });
-} catch (err) {
-  fatal(`Copy failed: ${err.message}`);
+// If skillDest is already a symlink pointing at skillSrc, skip the copy.
+const isSymlink = existsSync(skillDest) && lstatSync(skillDest).isSymbolicLink();
+const alreadyLinked = isSymlink && realpathSync(skillDest) === realpathSync(skillSrc);
+
+if (alreadyLinked) {
+  console.log(`✓ Skill is symlinked to source — skipping copy\n`);
+} else {
+  try {
+    mkdirSync(skillsRoot, { recursive: true });
+    cpSync(skillSrc, skillDest, { recursive: true, force: true });
+  } catch (err) {
+    fatal(`Skill copy failed: ${err.message}`);
+  }
+  console.log(`✓ Skill installed\n`);
 }
 
-console.log(`✓ Skill installed at: ${skillDest}\n`);
-console.log(`Next steps:`);
-console.log(`  1. Make sure OpenSpec commands are available in your repo`);
-console.log(`     (opsx:explore, opsx:ff, opsx:apply, opsx:verify, opsx:archive)`);
-console.log(`  2. Make sure the Codex plugin is installed in Claude Code`);
-console.log(`     (codex:adversarial-review, codex:review, codex:rescue)`);
-console.log(`  3. Start a session with Claude Code — the skill auto-triggers`);
-console.log(`     when you say "let's use opsx-codex" or begin spec-driven work.\n`);
-console.log(`  See examples/ in the repo for sample workflows.\n`);
+// ─── Install /squad command ───────────────────────────────────────────────────
+
+const cmdVerb = existsSync(commandDest) ? "Updating" : "Installing";
+console.log(`${cmdVerb} command: /squad`);
+console.log(`  from : ${commandSrc}`);
+console.log(`  to   : ${commandDest}`);
+
+try {
+  mkdirSync(commandsDir, { recursive: true });
+  copyFileSync(commandSrc, commandDest);
+} catch (err) {
+  fatal(`Command copy failed: ${err.message}`);
+}
+
+console.log(`✓ Command installed\n`);
+
+// ─── Done ─────────────────────────────────────────────────────────────────────
+
+console.log(`Ready. How to use:`);
+console.log(`  /squad <problem or change-name>   — start or continue the workflow`);
+console.log(`\nDependencies required in Claude Code:`);
+console.log(`  • OpenSpec  (opsx:explore, opsx:ff, opsx:apply, opsx:verify, opsx:archive)`);
+console.log(`  • Codex plugin  (codex:adversarial-review, codex:review, codex:rescue)\n`);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

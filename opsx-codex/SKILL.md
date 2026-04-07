@@ -1,16 +1,10 @@
 ---
 name: opsx-codex
 description: >
-  Spec-driven workflow that pairs OpenSpec (Claude as process owner) with Codex
-  (as independent adversarial reviewer and optional rescue agent). Use this skill
-  whenever you are starting or continuing any non-trivial code change — bugfix,
-  refactor, architectural shift, or unclear problem — and want a structured,
-  checkpoint-based approach with a second AI acting as a critic rather than a
-  co-pilot. Trigger on any of: "let's use opsx", "openspec + codex", "spec workflow",
-  "adversarial review my plan", "codex should review this", "opsx-codex flow",
-  or any time the user wants to start structured work on a repo with both tools
-  available. Also trigger proactively when the user has OpenSpec artifacts in progress
-  and is about to implement.
+  Workflow instructions for the /squad command. Load this skill only when the
+  user explicitly runs /squad or asks for the opsx-codex workflow by name.
+  Do NOT trigger on individual /opsx:* or /codex:* commands — those run
+  independently and do not need this skill loaded.
 ---
 
 # OpenSpec + Codex Workflow
