@@ -1,0 +1,36 @@
+{
+  "name": "opsx-codex-squad",
+  "version": "1.0.0",
+  "description": "Claude Code skill: spec-driven workflow pairing OpenSpec (Claude as process owner) with Codex (as adversarial reviewer and optional rescue agent).",
+  "keywords": [
+    "claude-code",
+    "claude-skill",
+    "openspec",
+    "codex",
+    "ai-workflow",
+    "spec-driven-development"
+  ],
+  "homepage": "https://github.com/dmitrykostenkoweb/opsx-codex-squad#readme",
+  "bugs": {
+    "url": "https://github.com/dmitrykostenkoweb/opsx-codex-squad/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmitrykostenkoweb/opsx-codex-squad.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "opsx-codex-squad-install": "scripts/install.js",
+    "opsx-codex-squad-uninstall": "scripts/uninstall.js"
+  },
+  "files": [
+    "skill/",
+    "scripts/",
+    "examples/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
