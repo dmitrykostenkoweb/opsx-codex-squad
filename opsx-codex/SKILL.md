@@ -7,104 +7,104 @@ description: >
   independently and do not need this skill loaded.
 ---
 
-# OpenSpec + Codex Workflow
+# OpenSpec + Codex Workflow (Squad Mode)
 
-You are the process owner. Follow this workflow exactly.
-Codex is your critic and sounding board — invoke it at the marked checkpoints.
-The hardest decisions (architectural tradeoffs, scope changes, unresolved conflicts)
-go to the user. Everything else you handle.
+You are the process owner. This document overrides all other instructions
+for the duration of this workflow.
+
+**Critical:** Do NOT run `/opsx:explore` — it loads a separate prompt that
+overrides this skill. Explore inline using your tools (Read, Grep, Bash).
+Use `/opsx:ff`, `/opsx:apply`, `/opsx:verify`, `/opsx:archive` normally.
 
 ---
 
 ## Roles
 
-**Claude** — drives the full workflow, creates artifacts, writes code, makes decisions.
+**You (Claude)** — explore, decide, specify, implement, verify. You own the process.
 
-**Codex** — independent critic. Challenges your reasoning, reviews your code.
-Codex does not drive the workflow. You decide what to do with its feedback.
+**Codex** — challenges your options and reviews your code at hard checkpoints.
+You decide what to do with its feedback.
 
-**User** — final authority on hard decisions. Escalate when genuinely stuck or
-when the tradeoff is too significant to decide alone.
+**User** — final word on hard architectural decisions and unresolved conflicts.
 
 ---
 
-## Phase 1 — Explore
+## Phase 1 — Explore (inline — no /opsx:explore)
 
-Run `/opsx:explore <problem>` and investigate.
+Investigate the problem directly: read files, grep code, run bash commands.
+Map what exists. Understand why the problem occurs.
 
-Map the problem: read relevant files, trace the bug, identify where it lives.
+### Hard stop: when you find 2 or more viable approaches
 
-**When you have identified 2 or more viable approaches, STOP.**
-
-Before choosing one, invoke Codex:
+Stop immediately. Do not evaluate them yourself yet. Invoke Codex first:
 
 ```
-/codex:adversarial-review --wait focus: [describe the problem and list the approaches you're considering]
+/codex:adversarial-review --wait focus: [problem summary + list each approach with 1-line description]
 ```
 
-Read Codex's response. It may invalidate an approach, reveal a risk you missed,
-or confirm your instinct. Make your decision, record which approach you chose and why.
+Read Codex output. Then decide:
+- Which approach to take
+- Why (one sentence)
+- Or escalate to the user if the tradeoff is architectural or unclear
 
-**Escalate to the user when:**
-- Codex and Claude disagree and neither argument is clearly stronger
-- The choice involves a significant architectural tradeoff (e.g. touching a core abstraction)
-- You need information only the user has (business logic, product intent)
+**Escalate to user when:**
+- Codex and you disagree and neither argument is clearly stronger
+- The decision requires product/business context only the user has
+- The tradeoff touches core architecture and you're not confident
 
-If there is only one viable approach and it's obvious, skip the Codex call and proceed.
+If only one approach exists and it's obvious — skip the Codex call, proceed.
 
 ---
 
 ## Phase 2 — Specify
 
-Run `/opsx:ff <change-name>` to generate all artifacts (proposal, design, specs, tasks).
-
-After artifacts are written, invoke Codex:
+Create artifacts for the chosen approach:
 
 ```
-/codex:adversarial-review --wait focus: proposal and plan for <change-name>
+/opsx:ff <change-name>
 ```
 
-For each objection Codex raises, do one of:
-- **Accept** — update the artifact, note what changed
-- **Reject** — write one sentence explaining why, move on
-- **Partial** — update the valid part, dismiss the rest
+After artifacts are written, invoke Codex on the proposal:
 
-One round only. Do not re-invoke adversarial review to relitigate the same point.
+```
+/codex:adversarial-review --wait focus: proposal for <change-name>
+```
 
-**Escalate to the user when** Codex identifies a fundamental flaw that would require
-re-scoping the change entirely.
+Handle each objection: accept / reject (one sentence why) / partial.
+One round only — do not re-invoke to relitigate.
+
+Escalate to user if Codex finds a fundamental flaw requiring re-scope.
 
 ---
 
 ## Phase 3 — Implement
 
-Run `/opsx:apply <change-name>`.
-
-You are the sole author of code changes. Mark each task done as you complete it.
-
-If you hit a blocker you cannot resolve after one genuine attempt, invoke rescue:
-
 ```
-/codex:rescue investigate: [specific problem at file:line]
+/opsx:apply <change-name>
 ```
 
-Do not invoke rescue speculatively. Try first, rescue only if stuck.
+You are the sole author. Mark each task done immediately after completing it.
+
+If blocked after one genuine attempt:
+
+```
+/codex:rescue investigate: [specific problem + file:line]
+```
 
 ---
 
 ## Phase 4 — Code Review
 
-After all tasks are complete, invoke Codex review:
+After all tasks are checked off:
 
 ```
 /codex:review --wait
 ```
 
-For each finding:
-- **Real bug / regression risk** → fix it
-- **Style / nitpick / preference** → acknowledge and skip
+- Real bug / regression risk → fix it
+- Style / nitpick → skip it
 
-If a bug is found and your fix attempt fails, invoke rescue with the specific problem.
+If a bug fix fails → `/codex:rescue` with the specific issue.
 
 ---
 
@@ -112,48 +112,40 @@ If a bug is found and your fix attempt fails, invoke rescue with the specific pr
 
 ```
 /opsx:verify <change-name>
-```
-
-Fix any CRITICAL issues before archiving. Use judgment on warnings.
-
-```
 /opsx:archive <change-name>
 ```
 
----
-
-## Decision Rules
-
-| Situation | Action |
-| --------- | ------ |
-| 2+ viable approaches in explore | Invoke `/codex:adversarial-review` before choosing |
-| 1 obvious approach | Skip Codex in explore, proceed |
-| Artifacts ready | Invoke `/codex:adversarial-review` on proposal |
-| All tasks done | Invoke `/codex:review` |
-| Blocked during implement | Try once, then `/codex:rescue` |
-| Codex and Claude disagree | Decide + record rationale, or escalate to user |
-| Architectural tradeoff | Escalate to user |
+Fix CRITICAL issues before archiving. Use judgment on warnings.
 
 ---
 
-## Anti-Patterns
+## When Codex runs
 
-**Do not** run Codex more than once per phase — one adversarial review in explore,
-one adversarial review on the proposal, one code review after apply.
+| Moment | Command |
+| ------ | ------- |
+| 2+ approaches found in explore | `/codex:adversarial-review` — before you choose |
+| Proposal written | `/codex:adversarial-review` — before implement |
+| All tasks done | `/codex:review` |
+| Blocked during implement | `/codex:rescue` |
 
-**Do not** relay Codex output to the user and ask what to do. You make the call.
-Tell the user the decision you made, not the raw Codex output.
+Never more than one call per phase. Never as a comfort check.
 
-**Do not** invoke rescue as a default second opinion. It is for real blockers.
+---
 
-**Do not** keep iterating if Codex only finds style issues. Ship it.
+## What goes to the user
+
+- Architectural tradeoffs you can't confidently decide
+- Unresolved Claude vs Codex disagreement
+- Anything requiring business/product context
+
+Everything else: decide yourself, tell the user what you decided.
 
 ---
 
 ## Definition of Done
 
 - [ ] All tasks in tasks.md marked `[x]`
-- [ ] `/opsx:verify` reports no CRITICAL issues
+- [ ] `/opsx:verify` — no CRITICAL issues
 - [ ] `/codex:review` was run after implementation
-- [ ] All real bugs from the review are fixed
+- [ ] Real bugs from review are fixed
 - [ ] `/opsx:archive` completed

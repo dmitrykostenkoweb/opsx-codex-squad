@@ -3,11 +3,13 @@ description: Start or continue the opsx-codex dual-AI workflow (OpenSpec + Codex
 argument-hint: '[change-name or problem description]'
 ---
 
-Use the `opsx-codex` skill to run the spec-driven workflow for this request.
-
-The argument after `/squad` is either:
-- a problem description → start with `/opsx:explore`
-- a change name → pick up from where it is (`/opsx:ff`, `/opsx:apply`, or status check)
-- nothing → check `openspec list --json` for active changes and ask what to do
+Use the `opsx-codex` skill to run the squad workflow.
 
 Raw argument: $ARGUMENTS
+
+Rules:
+- Do NOT run /opsx:explore — explore inline with your tools
+- Follow the opsx-codex skill phases exactly
+- If no argument: check `openspec list --json` for active changes, then ask
+
+Start now.
