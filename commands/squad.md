@@ -24,40 +24,35 @@ Do NOT write your findings to the user yet.
 
 ---
 
-## Step 3 — Send findings to Codex (MANDATORY, no exceptions)
+## Step 3 — Ask the user (with Codex offer)
 
-Print exactly:
+Whenever you want to ask the user a question during explore — about direction,
+approach, tradeoffs, or anything unclear — always append this at the end:
 
-```
----
-🤖 Claude → Codex
-[your findings + candidate approaches, 5-10 lines]
----
-```
+> 💬 Chcesz żebym to najpierw omówił z Codexem?
 
-Then launch Codex in background:
+If the user says yes → launch Codex before continuing:
 
 ```
-/codex:adversarial-review --background focus: [same content as above]
+/codex:adversarial-review --background focus: [your question + context, 5-10 lines]
 ```
 
 Tell the user:
-> "Codex is reviewing in background. I'll fetch the result in a moment — check /codex:status if curious."
+> "Codex analizuje w tle — sprawdź /codex:status. Pobiorę wynik gdy będzie gotowy."
 
-Then fetch the result using `/codex:result` once the job finishes.
-Do NOT use sleep loops. Do NOT poll manually. Use `/codex:result` once when ready.
-
-When you have Codex's response, print exactly:
+Fetch result with `/codex:result` once done. Then print:
 
 ```
 ---
 🤖 Codex said
-[paste key points from Codex output, 5-10 lines]
+[key points from Codex, 5-10 lines]
 ---
 🤖 Claude → decision
-[which approach, why in one sentence — or what you're escalating to the user]
+[your decision or what you're escalating to the user]
 ---
 ```
+
+If the user says no → continue without Codex.
 
 ---
 
