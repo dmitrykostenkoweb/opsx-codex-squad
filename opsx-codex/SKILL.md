@@ -64,10 +64,10 @@ explicitly invoked for rescue.
 
 Before starting, establish what kind of work this is:
 
-| Type | Entry point |
-|------|-------------|
-| Unclear / open-ended problem | `/opsx:explore` first |
-| Well-understood change | `/opsx:ff` directly |
+| Type                          | Entry point                       |
+| ----------------------------- | --------------------------------- |
+| Unclear / open-ended problem  | `/opsx:explore` first             |
+| Well-understood change        | `/opsx:ff` directly               |
 | Continuing in-progress change | `/opsx:apply` or `/opsx:continue` |
 
 Run `openspec list --json` to check for active changes. If one is relevant,
@@ -86,6 +86,7 @@ anything here.
 **Checkpoint A — Exit Explore**
 
 Exit explore when you can answer:
+
 1. What is the actual problem or goal?
 2. What are the plausible approaches and their tradeoffs?
 3. What is the recommended approach and why?
@@ -95,6 +96,7 @@ If you cannot answer these, keep exploring. If the problem is too unclear to
 answer #1, ask the user directly before proceeding.
 
 **Adversarial review is optional at this phase.** Use it when:
+
 - The diagnosis is surprising or non-obvious
 - You're about to propose a significant architectural change
 - The user explicitly requests it
@@ -110,6 +112,7 @@ applicable), specs, tasks. Read each dependency artifact before writing the
 next one.
 
 After all artifacts are written, verify the plan is internally consistent:
+
 - Proposal scope matches the tasks list
 - Design decisions are reflected in the specs
 - Tasks are concrete and ordered sensibly
@@ -160,6 +163,7 @@ Claude is the sole author of code changes during this phase. Implement tasks
 in order. Mark each task done immediately after completing it.
 
 If implementation reveals a problem not covered in the artifacts:
+
 1. Pause and update the relevant artifact (tasks, design, or spec)
 2. Continue implementation
 
@@ -185,6 +189,7 @@ focused on implementation quality — correctness, edge cases, code patterns —
 not on re-litigating the design.
 
 If the review finds a genuine bug or regression risk:
+
 1. Fix it directly (Claude implements the fix)
 2. Or invoke `/codex:rescue` if the fix is unclear (see Escalation Rules)
 
@@ -219,12 +224,12 @@ tasks or warnings, confirm with the user before archiving.
 
 ### When to use adversarial review vs standard review
 
-| Situation | Use |
-|-----------|-----|
-| Reviewing the plan/proposal before implementation | `/codex:adversarial-review` |
-| Reviewing code after implementation | `/codex:review` |
-| Both a design review and code review wanted | Both, in sequence |
-| Small change, high confidence, user wants speed | Skip adversarial review (MVP mode) |
+| Situation                                         | Use                                |
+| ------------------------------------------------- | ---------------------------------- |
+| Reviewing the plan/proposal before implementation | `/codex:adversarial-review`        |
+| Reviewing code after implementation               | `/codex:review`                    |
+| Both a design review and code review wanted       | Both, in sequence                  |
+| Small change, high confidence, user wants speed   | Skip adversarial review (MVP mode) |
 
 ### When adversarial review is mandatory
 
@@ -238,6 +243,7 @@ tasks or warnings, confirm with the user before archiving.
 ### When to trigger `/codex:rescue`
 
 Only invoke rescue when:
+
 1. Claude has tried to fix a specific issue and failed
 2. The review identified a bug or problem that Claude cannot diagnose alone
 3. The verify phase found a correctness issue that requires deeper investigation
@@ -248,6 +254,7 @@ blockers, not comfort.
 ### When to stop iterating
 
 Stop when any of:
+
 - All CRITICAL issues from review/verify are resolved
 - One full round of adversarial review + one full round of code review are done
 - Remaining feedback is stylistic or speculative
@@ -276,32 +283,38 @@ signal of correctness.
 **Avoid these patterns — they waste time and produce worse outcomes:**
 
 ### AI Review Theater
+
 Running `/codex:adversarial-review` and then `/codex:review` and then
 another `/codex:adversarial-review` because the first reviews found issues.
 One adversarial review of the plan. One code review after implementation.
 That's the full loop.
 
 ### Passive Stenography
+
 Claude summarizing Codex output and asking the user what to do next.
 Claude is the decision-maker. Read Codex output, decide, act, tell the user
 what decision was made.
 
 ### Codex Hijacking the Flow
+
 Codex raises a concern → Claude rewrites the entire proposal to address it →
 Codex raises a new concern about the rewrite → repeat.
 Limit: one round of updates in response to any single review. Then proceed.
 
 ### False Confidence from Agreement
+
 Both Claude and Codex agreeing on an approach is not strong evidence the
 approach is correct — they may share the same blind spots. Agreement is
 a green light, not a guarantee. Apply your own judgment.
 
 ### Rescue as a Default
+
 Using `/codex:rescue` on every review finding "just to be safe." Rescue
 is for real blockers. Using it routinely makes it meaningless and adds
 execution time with no benefit.
 
 ### Overengineering the Spec
+
 Creating elaborate spec artifacts for a 20-line bugfix. Use judgment. If
 the change is small and well-understood, `/opsx:ff` with minimal artifacts
 is correct. Don't add ceremony to tasks that don't need it.
@@ -311,16 +324,19 @@ is correct. Don't add ceremony to tasks that don't need it.
 ## Escalation Rules
 
 ### Escalate from review to rescue when:
+
 - Codex review found a bug and Claude's fix attempt failed (tried at least once)
 - Verify found a correctness issue requiring deep investigation
 - Implementation revealed an unexpected system interaction Claude can't resolve
 
 ### Escalate from rescue to user when:
+
 - Codex rescue ran and still couldn't identify a root cause
 - The problem appears to require access to runtime data (logs, prod DB state)
 - The scope of the fix has grown beyond the original change's boundaries
 
 ### Do not escalate when:
+
 - The issue is aesthetic or stylistic
 - Codex raises a "could be better" suggestion without a concrete risk
 - The same concern has been raised and dismissed in a previous round
@@ -344,6 +360,7 @@ clear scope — use this simplified loop:
 ```
 
 Skip adversarial review only for:
+
 - Hotfixes under time pressure (user explicitly opts out)
 - Purely additive changes with no design decisions involved (adding a field,
   renaming a variable, updating a test)
@@ -355,6 +372,7 @@ Rescue is opt-in. Only invoke it when genuinely blocked.
 ## Example Usage Patterns
 
 ### Scenario A — Bug with unclear root cause
+
 ```
 /opsx:explore why does X break when Y happens
 → explore until root cause hypothesis is clear
@@ -369,6 +387,7 @@ Rescue is opt-in. Only invoke it when genuinely blocked.
 ```
 
 ### Scenario B — Architectural refactor
+
 ```
 /opsx:explore <refactor idea>
 → explore tradeoffs, map affected code
@@ -383,6 +402,7 @@ Rescue is opt-in. Only invoke it when genuinely blocked.
 ```
 
 ### Scenario C — Small well-understood change (MVP mode)
+
 ```
 /opsx:ff <change-name>
 /opsx:apply <change-name>
@@ -390,9 +410,11 @@ Rescue is opt-in. Only invoke it when genuinely blocked.
 → fix bugs if any
 /opsx:archive <change-name>
 ```
+
 (adversarial review skipped — user explicitly in MVP mode, change is low risk)
 
 ### Scenario D — Blocked during implementation
+
 ```
 ...applying change, hit an unexpected issue...
 → Claude attempts fix, fails
@@ -405,15 +427,15 @@ Rescue is opt-in. Only invoke it when genuinely blocked.
 
 ## Expected Outputs per Phase
 
-| Phase | Claude produces | Codex produces |
-|-------|----------------|----------------|
-| Explore | Analysis, questions, hypothesis | — |
-| Specify | proposal.md, design.md, specs/, tasks.md | — |
-| Adversarial review | Updated artifacts + rationale notes | Adversarial review output |
-| Apply | Code changes, checked-off tasks | — |
-| Code review | Fixed bugs or noted dismissals | Code review output |
-| Verify | Verification report | — |
-| Archive | Archived change directory | — |
+| Phase              | Claude produces                          | Codex produces            |
+| ------------------ | ---------------------------------------- | ------------------------- |
+| Explore            | Analysis, questions, hypothesis          | —                         |
+| Specify            | proposal.md, design.md, specs/, tasks.md | —                         |
+| Adversarial review | Updated artifacts + rationale notes      | Adversarial review output |
+| Apply              | Code changes, checked-off tasks          | —                         |
+| Code review        | Fixed bugs or noted dismissals           | Code review output        |
+| Verify             | Verification report                      | —                         |
+| Archive            | Archived change directory                | —                         |
 
 ---
 
@@ -436,6 +458,7 @@ A change completed with this workflow is done when:
 **Recommended skill directory:** `opsx-codex`
 
 **Alias suggestion (optional):** Add to CLAUDE.md or shell aliases:
+
 ```
 # opsx-codex MVP flow
 alias opsx-flow="/opsx:ff $1 && /codex:adversarial-review --wait && /opsx:apply $1 && /codex:review --wait && /opsx:verify $1 && /opsx:archive $1"
@@ -443,19 +466,19 @@ alias opsx-flow="/opsx:ff $1 && /codex:adversarial-review --wait && /opsx:apply 
 
 **OpenSpec command summary:**
 
-| Command | When |
-|---------|------|
-| `/opsx:explore` | Problem unclear, need diagnosis, open exploration |
-| `/opsx:new` | Start change, step-by-step artifact creation |
-| `/opsx:ff` | Start change, generate all artifacts at once (preferred) |
-| `/opsx:apply` | Implement tasks from existing change |
-| `/opsx:verify` | Verify implementation matches artifacts |
-| `/opsx:archive` | Close and archive a completed change |
+| Command         | When                                                     |
+| --------------- | -------------------------------------------------------- |
+| `/opsx:explore` | Problem unclear, need diagnosis, open exploration        |
+| `/opsx:new`     | Start change, step-by-step artifact creation             |
+| `/opsx:ff`      | Start change, generate all artifacts at once (preferred) |
+| `/opsx:apply`   | Implement tasks from existing change                     |
+| `/opsx:verify`  | Verify implementation matches artifacts                  |
+| `/opsx:archive` | Close and archive a completed change                     |
 
 **Codex command summary:**
 
-| Command | When |
-|---------|------|
+| Command                     | When                                            |
+| --------------------------- | ----------------------------------------------- |
 | `/codex:adversarial-review` | Challenge the plan/proposal before implementing |
-| `/codex:review` | Review code after implementation |
-| `/codex:rescue` | Targeted fix when Claude is genuinely blocked |
+| `/codex:review`             | Review code after implementation                |
+| `/codex:rescue`             | Targeted fix when Claude is genuinely blocked   |
