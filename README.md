@@ -1,4 +1,4 @@
-# opsx-codex
+# opsx-codex-squad
 
 A Claude Code skill that integrates OpenSpec and the Codex plugin into a
 spec-driven, checkpoint-based development workflow.
@@ -39,11 +39,11 @@ are resolved.
 
 ## Role Separation
 
-| Role | Tool | Responsibility |
-|------|------|----------------|
-| Process owner | Claude | Drives OpenSpec, creates artifacts, implements, decides |
-| Independent critic | Codex | Challenges plan, reviews code, investigates blockers |
-| Final authority | You | Approves direction, owns the outcome |
+| Role               | Tool   | Responsibility                                          |
+| ------------------ | ------ | ------------------------------------------------------- |
+| Process owner      | Claude | Drives OpenSpec, creates artifacts, implements, decides |
+| Independent critic | Codex  | Challenges plan, reviews code, investigates blockers    |
+| Final authority    | You    | Approves direction, owns the outcome                    |
 
 Claude is not a passive stenographer. Codex is not a co-owner.
 When Codex raises an objection, Claude evaluates it, makes a decision,
@@ -87,10 +87,12 @@ architectural refactors, blocked-mid-implementation rescue, and small hotfixes.
 > in your Claude Code environment:
 
 ### 1. Claude Code
+
 The skill runs inside Claude Code. Without it, none of this applies.
 Install: https://claude.ai/code
 
 ### 2. OpenSpec
+
 Provides the `openspec` CLI and the `/opsx:*` slash commands:
 `/opsx:explore`, `/opsx:ff`, `/opsx:new`, `/opsx:apply`, `/opsx:verify`, `/opsx:archive`
 
@@ -102,13 +104,16 @@ The `/opsx:*` commands must be available in your Claude Code project
 (typically via `.claude/commands/opsx/`).
 
 ### 3. Codex Plugin for Claude Code (`codex-plugin-cc`)
+
 Provides the `/codex:*` slash commands:
 `/codex:adversarial-review`, `/codex:review`, `/codex:rescue`
 
 Install via Claude Code's plugin system:
+
 ```
 /install codex
 ```
+
 Or follow the instructions at: https://github.com/openai/codex-plugin-cc
 
 ---
@@ -136,7 +141,7 @@ are available as shell commands.
 ### Option C — Manual from GitHub
 
 ```bash
-git clone https://github.com/dmitrykostenkoweb/opsx-codex-squad.git
+git clone https://github.com/YOUR_USERNAME/opsx-codex-squad.git
 cd opsx-codex-squad
 node scripts/install.js
 ```
@@ -199,15 +204,18 @@ rm -rf ~/.claude/skills/opsx-codex
 ## Decision Rules (Short Version)
 
 **When adversarial review is mandatory:**
+
 - Architectural changes (new abstractions, module boundaries, state flow changes)
 - Changes touching security, auth, or data integrity
 - Any change estimated at more than ~1–2 hours of work
 
 **When to trigger rescue:**
+
 - Only when Claude has tried to fix a specific issue and failed at least once
 - Not as a "second opinion just in case"
 
 **When to stop iterating:**
+
 - One adversarial review + one code review = full loop
 - Max two review cycles per change total
 - Remaining stylistic feedback: log and skip
@@ -220,14 +228,14 @@ sentence of rationale, and moves forward. Codex does not get a veto.
 
 ## Anti-Patterns This Workflow Prevents
 
-| Pattern | Prevention |
-|---------|-----------|
-| AI review theater | Max one adversarial review, one code review per change |
-| Passive stenography | Claude decides; it doesn't relay Codex output and ask the user |
-| Codex hijacking the flow | One round of updates per review, then proceed |
-| False confidence from agreement | Explicitly called out — agreement ≠ correctness |
-| Rescue as default | Rescue is gated behind a genuine failed-fix attempt |
-| Overengineering the spec | Judgment-based: small changes don't need elaborate artifacts |
+| Pattern                         | Prevention                                                     |
+| ------------------------------- | -------------------------------------------------------------- |
+| AI review theater               | Max one adversarial review, one code review per change         |
+| Passive stenography             | Claude decides; it doesn't relay Codex output and ask the user |
+| Codex hijacking the flow        | One round of updates per review, then proceed                  |
+| False confidence from agreement | Explicitly called out — agreement ≠ correctness                |
+| Rescue as default               | Rescue is gated behind a genuine failed-fix attempt            |
+| Overengineering the spec        | Judgment-based: small changes don't need elaborate artifacts   |
 
 ---
 
@@ -248,7 +256,7 @@ sentence of rationale, and moves forward. Codex does not get a veto.
 
 ## Publishing (npm)
 
-Replace `dmitrykostenkoweb` in `package.json` and `README.md`, then:
+Replace `YOUR_USERNAME` in `package.json` and `README.md`, then:
 
 ```bash
 # First publish
