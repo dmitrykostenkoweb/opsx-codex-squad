@@ -14,8 +14,8 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 const SKILL_NAME = "opsx-codex";
 
-// Source: the skill/ directory bundled with this package.
-const skillSrc = resolve(__dirname, "..", "skill");
+// Source: the opsx-codex/ directory bundled with this package.
+const skillSrc = resolve(__dirname, "..", "opsx-codex");
 
 // Target: configurable via env var, falls back to ~/.claude/skills/
 const skillsRoot =
