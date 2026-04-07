@@ -4,7 +4,7 @@ argument-hint: '[change-name or problem description]'
 ---
 
 Use the `opsx-codex` skill. Follow these steps mechanically in order.
-Do not skip steps. Do not present findings to the user before Codex runs.
+Do not skip steps. Do not present findings to the user before Codex responds.
 
 Raw argument: $ARGUMENTS
 
@@ -24,33 +24,38 @@ Do NOT write your findings to the user yet.
 
 ---
 
-## Step 3 — Codex review of your findings (MANDATORY, no exceptions)
+## Step 3 — Send findings to Codex (MANDATORY, no exceptions)
 
-You have finished exploring. Before you write anything to the user, print exactly:
+Print exactly:
 
 ```
 ---
 🤖 Claude → Codex
-[write your findings and candidate approaches here, 5-10 lines max]
+[your findings + candidate approaches, 5-10 lines]
 ---
 ```
 
-Then immediately run:
+Then launch Codex in background:
 
 ```
-/codex:adversarial-review --wait focus: [same content as above]
+/codex:adversarial-review --background focus: [same content as above]
 ```
 
-This is not optional. It does not matter if you think the answer is obvious.
-It does not matter if there is only one approach. Run it anyway.
+Tell the user:
+> "Codex is reviewing in background. I'll fetch the result in a moment — check /codex:status if curious."
 
-When Codex responds, its output appears verbatim in the chat automatically.
-After it appears, print exactly:
+Then fetch the result using `/codex:result` once the job finishes.
+Do NOT use sleep loops. Do NOT poll manually. Use `/codex:result` once when ready.
+
+When you have Codex's response, print exactly:
 
 ```
+---
+🤖 Codex said
+[paste key points from Codex output, 5-10 lines]
 ---
 🤖 Claude → decision
-[your decision: which approach, why in one sentence, or what you're escalating to the user]
+[which approach, why in one sentence — or what you're escalating to the user]
 ---
 ```
 
@@ -58,13 +63,12 @@ After it appears, print exactly:
 
 ## Step 4 — Present to user
 
-Now write a short summary for the user:
-- Problem found
+Short summary:
+- What you found
 - What Codex challenged or confirmed
-- Your decision
-- What you need from the user (if anything)
+- Your decision or what you need from the user
 
-Keep it brief — the full AI dialogue above is already visible.
+The full dialogue above is already visible — keep this brief.
 
 ---
 
@@ -74,17 +78,17 @@ Keep it brief — the full AI dialogue above is already visible.
 /opsx:ff <change-name>
 ```
 
-Then immediately:
+Then:
 
 ```
-/codex:adversarial-review --wait focus: proposal for <change-name>
+/codex:adversarial-review --background focus: proposal for <change-name>
 ```
 
-When Codex responds, print:
+Fetch result with `/codex:result` when done. Then print:
 
 ```
 ---
-🤖 Claude → decision on proposal review
+🤖 Claude → decision on proposal
 [accept / reject / partial — one sentence per point]
 ---
 ```
@@ -100,17 +104,17 @@ One round only.
 ```
 
 Sole author. Mark tasks done as you go.
-Blocked after one attempt → `/codex:rescue investigate: [specific issue + file:line]`
+Blocked after one genuine attempt → `/codex:rescue investigate: [specific issue + file:line]`
 
 ---
 
 ## Step 7 — Code review
 
 ```
-/codex:review --wait
+/codex:review --background
 ```
 
-When Codex responds, print:
+Fetch result with `/codex:result` when done. Then print:
 
 ```
 ---
@@ -133,6 +137,7 @@ Real bug → fix. Style → skip.
 ---
 
 Hard rules:
-- Never present analysis to the user before Step 3 runs
+- Never present analysis to the user before Codex responds (Step 3)
 - Never skip Step 3, even for obvious cases
-- Escalate to user: architectural tradeoffs, unresolved Claude vs Codex conflict, business context needed
+- Never use sleep loops to wait for Codex — use /codex:result once when ready
+- Escalate to user: architectural tradeoffs, unresolved Claude vs Codex disagreement, business context
